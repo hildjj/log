@@ -41,6 +41,8 @@ class WriteSink extends Writable {
   }
 }
 
+export type Logger = pino.Logger;
+
 /**
  * Create a new log instance.  Mostly useful for testing.
  *
@@ -51,7 +53,7 @@ class WriteSink extends Writable {
 export function createLog(
   opts: LogOptions = {},
   bindings?: pino.Bindings
-): pino.Logger {
+): Logger {
   const {
     logLevel,
     logFile,
@@ -107,7 +109,7 @@ export function createLog(
   return ret;
 }
 
-let instance: pino.Logger | undefined = undefined;
+let instance: Logger | undefined = undefined;
 
 /**
  * Get a singleton logging object.  Opts and bindings are used the first time,
@@ -120,7 +122,7 @@ let instance: pino.Logger | undefined = undefined;
 export function getLog(
   opts: LogOptions,
   bindings: pino.Bindings = {}
-): pino.Logger {
+): Logger {
   if (!instance) {
     instance = createLog(opts, bindings);
   }
