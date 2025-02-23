@@ -19,6 +19,12 @@ export interface LogOptions extends pino.LoggerOptions<never, false> {
 
   /** If logFile is set, write synchronously if true (for testing). */
   sync?: boolean;
+
+  /**
+   * Ignore this set of comma-separated fields when pretty printing logs
+   * to stdout.  Default: 'pid,hostname,name,host,port'.
+   */
+  prettyIgnore?: string;
 }
 
 /**
@@ -34,8 +40,6 @@ class WriteSink extends Writable {
     callback(null);
   }
 }
-
-const prettyIgnore = 'pid,hostname,name,host,port';
 
 /**
  * Create a new log instance.  Mostly useful for testing.
@@ -53,6 +57,7 @@ export function createLog(
     logFile,
     mute = false,
     sync = false,
+    prettyIgnore = 'pid,hostname,name,host,port',
     ...baseOpts
   } = opts;
 
