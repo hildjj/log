@@ -9,7 +9,7 @@ import {tmpdir} from 'node:os';
 
 const tmp = await fs.mkdtemp(join(tmpdir(), 'cto-af-log-'));
 
-after(async() => {
+after(async () => {
   await fs.rm(tmp, {recursive: true});
 });
 
@@ -53,7 +53,7 @@ test('edges', () => {
   assert.equal(log2.level, 'trace');
 });
 
-test('file', async() => {
+test('file', async () => {
   const logFile = join(tmp, 'file.log');
   const log = createLog({
     logFile,
