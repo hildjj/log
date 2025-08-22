@@ -74,7 +74,7 @@ const PINO_OPTIONS_NAMES = new Set([
 
 assertDisjoint(CTO_LOG_OPTIONS_NAMES, PINO_OPTIONS_NAMES);
 export const LOG_OPTIONS_NAMES =
-  new Set([...CTO_LOG_OPTIONS_NAMES, PINO_OPTIONS_NAMES]);
+  new Set([...CTO_LOG_OPTIONS_NAMES, ...PINO_OPTIONS_NAMES]);
 export type LogOptions = CtoLogOptions & pino.LoggerOptions<never, false>;
 export type Logger = pino.Logger;
 
