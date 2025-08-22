@@ -15,10 +15,11 @@ after(async () => {
 
 test('getLog', t => {
   const a = [];
-  const log = getLog({
+  const opts = {
     base: {},
     timestamp: false,
-  });
+  };
+  const log = getLog(opts);
   t.mock.method(log[streamSym], 'write', s => a.push(s));
   log.info('foo');
   const log2 = getLog();
@@ -30,6 +31,15 @@ test('getLog', t => {
     '{"level":30,"msg":"foo"}\n',
     '{"level":40,"msg":"bar"}\n',
   ]);
+
+  const log3 = getLog(opts);
+  assert.equal(log, log3);
+
+  const log4 = getLog({});
+  assert.equal(log, log4);
+
+  const log5 = createLog(opts);
+  assert.equal(log, log5);
 });
 
 test('mute', () => {
