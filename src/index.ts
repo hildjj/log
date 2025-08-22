@@ -1,13 +1,14 @@
+import {assertDisjoint, nameSet, select} from '@cto.af/utils';
 import {Writable} from 'node:stream';
-import {pino} from 'pino';
+import pino from 'pino';
 import pretty from 'pino-pretty';
 
-export interface LogOptions extends pino.LoggerOptions<never, false> {
+export interface CtoLogOptions {
 
   /**
    * Increase (or decrease if negative) log verbosity by this much.
    * -3: fatal, -2: error, -1: warn, 0: info, 1: debug, 2: trace.
-   * Useful for -qqqvvvv option processing.
+   * Useful for -qqqvvvv option processing.  Default: 0.
    */
   logLevel?: number;
 
@@ -25,7 +26,57 @@ export interface LogOptions extends pino.LoggerOptions<never, false> {
    * to stdout.  Default: 'pid,hostname,name,host,port'.
    */
   prettyIgnore?: string;
+
+  /**
+   * Log instance, created by the first layer to call createLog.  Alternative
+   * to getLog for times when multiple loggers are needed.
+   */
+  log?: Logger | null;
 }
+
+export const DEFAULT_LOG_OPTIONS: Required<CtoLogOptions> = {
+  log: null,
+  logFile: null,
+  logLevel: 0,
+  mute: false,
+  prettyIgnore: 'pid,hostname,name,host,port',
+  sync: false,
+};
+const CTO_LOG_OPTIONS_NAMES = nameSet(DEFAULT_LOG_OPTIONS);
+const PINO_OPTIONS_NAMES = new Set([
+  'base',
+  'browser',
+  'crlf',
+  'customLevels',
+  'depthLimit',
+  'edgeLimit',
+  'enabled',
+  'errorKey',
+  'formatters',
+  'hooks',
+  'level',
+  'levelComparison',
+  'levelVal',
+  'messageKey',
+  'mixin',
+  'mixinMergeStrategy',
+  'msgPrefix',
+  'name',
+  'nestedKey',
+  'onChild',
+  'redact',
+  'safe',
+  'serializers',
+  'timestamp',
+  'transport',
+  'useOnlyCustomLevels',
+]) as Set<keyof pino.LoggerOptions<never, false>>;
+
+assertDisjoint(CTO_LOG_OPTIONS_NAMES, PINO_OPTIONS_NAMES);
+export const LOG_OPTIONS_NAMES =
+  new Set([...CTO_LOG_OPTIONS_NAMES, PINO_OPTIONS_NAMES]);
+export type LogOptions = CtoLogOptions & pino.LoggerOptions<never, false>;
+export type Logger = pino.Logger;
 
 /**
  * "Write" to dev/null.
@@ -41,8 +92,6 @@ class WriteSink extends Writable {
   }
 }
 
-export type Logger = pino.Logger;
-
 /**
  * Create a new log instance.  Mostly useful for testing.
  *
@@ -54,58 +103,57 @@ export function createLog(
   opts: LogOptions = {},
   bindings?: pino.Bindings
 ): Logger {
-  const {
-    logLevel,
-    logFile,
-    mute = false,
-    sync = false,
-    prettyIgnore = 'pid,hostname,name,host,port',
-    ...baseOpts
-  } = opts;
+  const [logOpts, pinoOpts] = select(opts, DEFAULT_LOG_OPTIONS);
 
-  if (logLevel !== undefined) {
-    let levelNum = Math.round(3 - logLevel);
+  if (logOpts.log) {
+    return logOpts.log;
+  }
+
+  if (logOpts.logLevel !== undefined) {
+    let levelNum = Math.round(3 - logOpts.logLevel);
     if (levelNum < 1) {
       levelNum = 1;
     } else if (levelNum > 6) {
       levelNum = 6;
     }
-    baseOpts.level = pino.levels.labels[levelNum * 10];
+    pinoOpts.level = pino.levels.labels[levelNum * 10];
   }
 
-  let ret: pino.Logger | undefined = undefined;
-  if (mute && !logFile) {
+  let ret: Logger | undefined = undefined;
+  if (logOpts.mute && !logOpts.logFile) {
     // Shh.
-    ret = pino(baseOpts, new WriteSink());
-  } else if (logFile) {
+    ret = pino(pinoOpts, new WriteSink());
+  } else if (logOpts.logFile) {
     const dest = pino.destination({
-      dest: logFile,
-      sync,
+      dest: logOpts.logFile,
+      sync: logOpts.sync,
       append: true,
       mkdir: true,
     });
-    if (mute) {
-      ret = pino(baseOpts, dest);
+    if (logOpts.mute) {
+      ret = pino(pinoOpts, dest);
     } else {
-      ret = pino(baseOpts, pino.multistream([{
-        level: baseOpts.level,
+      ret = pino(pinoOpts, pino.multistream([{
+        level: pinoOpts.level,
         stream: dest,
       }, {
-        level: baseOpts.level,
+        level: pinoOpts.level,
         stream: pretty({
-          ignore: prettyIgnore,
+          ignore: logOpts.prettyIgnore,
         }),
       }]));
     }
   } else {
-    ret = pino(baseOpts, pretty({
-      ignore: prettyIgnore,
+    ret = pino(pinoOpts, pretty({
+      ignore: logOpts.prettyIgnore,
     }));
   }
 
   if (bindings) {
     ret.setBindings(bindings);
   }
+
+  opts.log = ret;
   return ret;
 }
 
@@ -113,16 +161,20 @@ let instance: Logger | undefined = undefined;
 
 /**
  * Get a singleton logging object.  Opts and bindings are used the first time,
- * and ignored thereafter.
+ * and ignored thereafter.  Ideally the highest-level layer will call this
+ * first before any lower layer.
  *
  * @param opts Logging options.
  * @param bindings Extra fields to put into every log item.
  * @returns Singleton logging object.
  */
 export function getLog(
-  opts: LogOptions,
+  opts?: LogOptions,
   bindings: pino.Bindings = {}
 ): Logger {
+  if (opts?.log) {
+    return opts.log;
+  }
   if (!instance) {
     instance = createLog(opts, bindings);
   }
