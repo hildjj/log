@@ -109,15 +109,13 @@ export function createLog(
     return logOpts.log;
   }
 
-  if (logOpts.logLevel !== undefined) {
-    let levelNum = Math.round(3 - logOpts.logLevel);
-    if (levelNum < 1) {
-      levelNum = 1;
-    } else if (levelNum > 6) {
-      levelNum = 6;
-    }
-    pinoOpts.level = pino.levels.labels[levelNum * 10];
+  let levelNum = Math.round(3 - logOpts.logLevel);
+  if (levelNum < 1) {
+    levelNum = 1;
+  } else if (levelNum > 6) {
+    levelNum = 6;
   }
+  pinoOpts.level = pino.levels.labels[levelNum * 10];
 
   let ret: Logger | undefined = undefined;
   if (logOpts.mute && !logOpts.logFile) {
