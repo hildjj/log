@@ -1,5 +1,4 @@
 import {assertDisjoint, nameSet, select} from '@cto.af/utils';
-import {Writable} from 'node:stream';
 import pino from 'pino';
 import pretty from 'pino-pretty';
 
@@ -81,14 +80,10 @@ export type Logger = pino.Logger;
 /**
  * "Write" to dev/null.
  */
-class WriteSink extends Writable {
+class WriteSink {
   // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-  public _write(
-    _chunk: any,
-    _encoding: BufferEncoding,
-    callback: (error?: Error | null) => void
-  ): void {
-    callback(null);
+  public write(_msg: string): void {
+    // No-op.
   }
 }
 
