@@ -95,3 +95,17 @@ test('both', async t => {
   assert.equal(out, ''); // Because of the write mock.
   assert.deepEqual(a, ['{"level":30,"msg":"foo"}\n']);
 });
+
+test('environment variable', () => {
+  const old = process.env.CTOAF_LOG_LEVEL;
+  process.env.CTOAF_LOG_LEVEL = '3';
+
+  const log = createLog();
+  assert.equal(log.level, 'trace');
+
+  if (typeof old === 'string') {
+    process.env.CTOAF_LOG_LEVEL = old;
+  } else {
+    delete process.env.CTOAF_LOG_LEVEL;
+  }
+});
