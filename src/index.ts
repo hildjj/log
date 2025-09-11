@@ -38,7 +38,7 @@ export const DEFAULT_LOG_OPTIONS: Required<CtoLogOptions> = {
   logFile: null,
   logLevel: 0,
   mute: false,
-  prettyIgnore: 'pid,hostname,name,host,port',
+  prettyIgnore: 'pid,hostname,name,host,port,ns',
   sync: false,
 };
 const CTO_LOG_OPTIONS_NAMES = nameSet(DEFAULT_LOG_OPTIONS);
@@ -182,4 +182,19 @@ export function getLog(
     instance = createLog(opts, bindings);
   }
   return instance;
+}
+
+/**
+ * Get a child logger with the given bindings.
+ *
+ * @param opts Log options.
+ * @param bindings Name/value pairs to add to each log line.
+ * @returns Initialized logger instance.
+ */
+export function childLogger(
+  opts: LogOptions = {},
+  bindings: pino.Bindings = {}
+): Logger {
+  const log = getLog(opts);
+  return log.child(bindings);
 }
