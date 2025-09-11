@@ -1,5 +1,5 @@
 import {after, test} from 'node:test';
-import {createLog, getLog} from '../lib/index.js';
+import {childLogger, createLog, getLog} from '../lib/index.js';
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import {join} from 'node:path';
@@ -25,11 +25,16 @@ test('getLog', t => {
   const log2 = getLog();
   log2.warn('bar');
   log2.debug('boo');
+
+  const child = childLogger(opts, {foo: 'bar'});
+  child.info('boo');
+
   t.mock.reset();
   assert.equal(log, log2);
   assert.deepEqual(a, [
     '{"level":30,"msg":"foo"}\n',
     '{"level":40,"msg":"bar"}\n',
+    '{"level":30,"foo":"bar","msg":"boo"}\n',
   ]);
 
   const log3 = getLog(opts);
