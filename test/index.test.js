@@ -1,5 +1,5 @@
 import {after, test} from 'node:test';
-import {childLogger, createLog, getLog} from '../lib/index.js';
+import {childLogger, createLog, getLog} from '../lib/index.mjs';
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
 import {join} from 'node:path';
