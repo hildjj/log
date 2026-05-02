@@ -11,5 +11,5 @@ export default defineConfig({
   outDir: 'lib',
   sourcemap: false,
   splitting: false,
-  target: 'es2022',
+  target: 'es2025',
 });
