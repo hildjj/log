@@ -1,6 +1,6 @@
 import {after, test} from 'node:test';
 import {childLogger, createLog, getLog} from '../lib/index.js';
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {join} from 'node:path';
 import {promisify} from 'node:util';

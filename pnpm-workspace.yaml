@@ -1,5 +1,5 @@
 minimumReleaseAgeExclude:
-  - '@cto.af/eslint-config@7.0.2'
+  - '@cto.af/eslint-config@7.0.2 || 7.0.3'
   - eslint-plugin-jsdoc@63.0.2
   - '@typescript/native-preview-darwin-arm64@7.0.0-dev.20260606.1'
   - '@typescript/native-preview-darwin-x64@7.0.0-dev.20260606.1'

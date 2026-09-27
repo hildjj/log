@@ -104,7 +104,6 @@ export function createLog(
     return logOpts.log;
   }
 
-  // @ts-expect-error Global process unknown.
   // eslint-disable-next-line @typescript-eslint/dot-notation
   const envLevel = globalThis['process']?.env?.CTOAF_LOG_LEVEL;
   if (typeof envLevel === 'string') {
