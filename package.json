@@ -1,6 +1,6 @@
 {
   "name": "@cto.af/log",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "decription": "A thin wrapper around Pino to help isolate its changes from other projects",
   "main": "lib/index.mjs",
   "files": [
